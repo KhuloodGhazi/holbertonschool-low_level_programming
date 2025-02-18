@@ -13,22 +13,24 @@ void times_table(void)
 		{
 			product = row * col;
 
+			/* Print first number without a comma */
 			if (col == 0)
 			{
-				_putchar(product + '0'); /* First number, no comma */
+				_putchar(product + '0');
 			}
 			else
 			{
 				_putchar(',');
 				_putchar(' ');
 
-				/* Formatting for single-digit numbers */
+				/* Ensure correct spacing for alignment */
 				if (product < 10)
 					_putchar(' ');
 
-				_putchar((product / 10) + '0'); /* Tens digit */
+				/* Print tens and ones digits properly */
 				if (product >= 10)
-					_putchar((product % 10) + '0'); /* Ones digit */
+					_putchar((product / 10) + '0');
+				_putchar((product % 10) + '0');
 			}
 		}
 		_putchar('\n');
