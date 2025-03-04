@@ -2,17 +2,21 @@
 #include <stdio.h>
 
 /**
- * main - check the code
+ * main - Test the _strpbrk function.
  *
  * Return: Always 0.
  */
 int main(void)
 {
-    char *s = "hello, world";
-    char *f = "world";
-    char *t;
+	char *s = "hello, world";
+	char *f = "world";
+	char *t;
 
-    t = _strpbrk(s, f);
-    printf("%s\n", t); /* Should print "llo, world" */
-    return 0;
+	t = _strpbrk(s, f);
+	printf("Result: %s\n", t); /* Expected output: "llo, world" */
+
+	t = _strpbrk(s, "xyz");
+	printf("Result: %s\n", t ? t : "NULL"); /* Expected output: NULL */
+
+	return (0);
 }
