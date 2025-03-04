@@ -13,12 +13,15 @@ char *_strpbrk(char *s, char *accept)
 {
     int i, j;
 
-    for (i = 0; s[i] != '\0'; i++) { /* Loop through each character in `s` */
-        for (j = 0; accept[j] != '\0'; j++) { /* Loop through each character in `accept` */
-            if (s[i] == accept[j]) { /* Check for a match */
-                return &s[i]; /* Return the address of the matching character */
+    for (i = 0; s[i] != '\0'; i++)
+    {
+        for (j = 0; accept[j] != '\0'; j++)
+        {
+            if (s[i] == accept[j])
+            {
+                return (&s[i]); /* Use parentheses around return value */
             }
         }
     }
-    return NULL; /* Return NULL if no match found */
+    return (NULL); /* Use parentheses around return value */
 }
