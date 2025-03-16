@@ -1,11 +1,10 @@
 #include "3-calc.h"
-#include <stddef.h>  /* Include to define NULL */
 
 /**
- * get_op_func - selects the correct function to perform the operation
- * @s: the operator passed as an argument
- * 
- * Return: pointer to the corresponding function or NULL if not found
+ * get_op_func - Selects the correct function to perform the operation
+ * @s: The operator passed as an argument to the program
+ *
+ * Return: Pointer to the function corresponding to the operator
  */
 int (*get_op_func(char *s))(int, int)
 {
@@ -15,20 +14,16 @@ int (*get_op_func(char *s))(int, int)
         {"*", op_mul},
         {"/", op_div},
         {"%", op_mod},
-        {NULL, NULL}  /* Sentinel value to indicate the end of the array */
+        {NULL, NULL}
     };
-
     int i = 0;
 
-    /* Loop through the operators array and check for a match */
     while (ops[i].op != NULL)
     {
-        if (*s == *(ops[i].op))  /* Match operator */
-        {
-            return ops[i].f;  /* Return the corresponding function pointer */
-        }
+        if (*s == *(ops[i].op))
+            return (ops[i].f);
         i++;
     }
 
-    return NULL;  /* Return NULL if no match is found */
+    return (NULL);  /* Return NULL if no matching operator is found */
 }

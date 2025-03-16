@@ -7,40 +7,37 @@
  * @argc: argument count
  * @argv: argument vector (array of strings)
  *
- * Return: 0 on success, error code on failure
+ * Return: 0 on success, exit code on failure
  */
 int main(int argc, char *argv[])
 {
     int num1, num2;
     int (*operation)(int, int);
 
-    if (argc != 4)  // Ensure there are exactly 3 arguments (num1, operator, num2)
+    if (argc != 4)  /* Ensure there are exactly 3 arguments */
     {
         printf("Error\n");
-        exit(98);  // Exit status 98 for incorrect argument count
+        exit(98);  /* Exit with status 98 for incorrect argument count */
     }
 
-    num1 = atoi(argv[1]);  // Convert the first argument to an integer
-    num2 = atoi(argv[3]);  // Convert the third argument to an integer
+    num1 = atoi(argv[1]);  /* Convert the first argument to an integer */
+    num2 = atoi(argv[3]);  /* Convert the third argument to an integer */
 
-    // Get the corresponding function for the operator
-    operation = get_op_func(argv[2]);
+    operation = get_op_func(argv[2]);  /* Get the function for the operator */
 
-    // Check if the operator is valid
-    if (operation == NULL)
+    if (operation == NULL)  /* Check if operator is valid */
     {
         printf("Error\n");
-        exit(99);  // Exit status 99 for invalid operator
+        exit(99);  /* Exit with status 99 for invalid operator */
     }
 
-    // Handle division or modulo by zero
-    if ((argv[2][0] == '/' || argv[2][0] == '%') && num2 == 0)
+    if ((argv[2][0] == '/' || argv[2][0] == '%') && num2 == 0)  /* Division by zero check */
     {
         printf("Error\n");
-        exit(100);  // Exit status 100 for division or modulo by zero
+        exit(100);  /* Exit with status 100 for division by zero */
     }
 
-    // Perform the operation and print the result
-    printf("%d\n", operation(num1, num2));
+    printf("%d\n", operation(num1, num2));  /* Perform the operation and print result */
+
     return (0);
 }
