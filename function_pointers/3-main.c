@@ -1,43 +1,42 @@
+#include "3-calc.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "3-calc.h"
 
 /**
- * main - Perform simple operations based on user input
- * @argc: argument count
- * @argv: argument vector (array of strings)
+ * main - Entry point, performs calculations
+ * @argc: Argument count
+ * @argv: Argument vector
  *
- * Return: 0 on success, exit code on failure
+ * Return: 0 on success, exit with status on failure
  */
 int main(int argc, char *argv[])
 {
-    int num1, num2;
-    int (*operation)(int, int);
+	int num1, num2, result;
+	int (*operation)(int, int);
 
-    if (argc != 4)  /* Ensure there are exactly 3 arguments */
-    {
-        printf("Error\n");
-        exit(98);  /* Exit with status 98 for incorrect argument count */
-    }
+	if (argc != 4)
+	{
+		printf("Error\n");
+		exit(98);
+	}
 
-    num1 = atoi(argv[1]);  /* Convert the first argument to an integer */
-    num2 = atoi(argv[3]);  /* Convert the third argument to an integer */
+	num1 = atoi(argv[1]);
+	num2 = atoi(argv[3]);
+	operation = get_op_func(argv[2]);
 
-    operation = get_op_func(argv[2]);  /* Get the function for the operator */
+	if (!operation)
+	{
+		printf("Error\n");
+		exit(99);
+	}
 
-    if (operation == NULL)  /* Check if operator is valid */
-    {
-        printf("Error\n");
-        exit(99);  /* Exit with status 99 for invalid operator */
-    }
+	if ((*argv[2] == '/' || *argv[2] == '%') && num2 == 0)
+	{
+		printf("Error\n");
+		exit(100);
+	}
 
-    if ((argv[2][0] == '/' || argv[2][0] == '%') && num2 == 0)  /* Division by zero check */
-    {
-        printf("Error\n");
-        exit(100);  /* Exit with status 100 for division by zero */
-    }
-
-    printf("%d\n", operation(num1, num2));  /* Perform the operation and print result */
-
-    return (0);
+	result = operation(num1, num2);
+	printf("%d\n", result);
+	return (0);
 }
