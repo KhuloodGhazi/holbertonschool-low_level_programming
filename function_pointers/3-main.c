@@ -3,41 +3,44 @@
 #include "3-calc.h"
 
 /**
- * main - performs simple operations based on input
- * @argc: number of arguments
- * @argv: array of arguments
- * Return: 0 on success, or exits with an error code
+ * main - Perform simple operations based on user input
+ * @argc: argument count
+ * @argv: argument vector (array of strings)
+ *
+ * Return: 0 on success, error code on failure
  */
 int main(int argc, char *argv[])
 {
-    int num1, num2, result;
-    int (*op_func)(int, int);
+    int num1, num2;
+    int (*operation)(int, int);
 
-    if (argc != 4)
+    if (argc != 4)  // Ensure there are exactly 3 arguments (num1, operator, num2)
     {
         printf("Error\n");
-        exit(98);
+        exit(98);  // Exit status 98 for incorrect argument count
     }
 
-    num1 = atoi(argv[1]);
-    num2 = atoi(argv[3]);
+    num1 = atoi(argv[1]);  // Convert the first argument to an integer
+    num2 = atoi(argv[3]);  // Convert the third argument to an integer
 
-    op_func = get_op_func(argv[2]);
+    // Get the corresponding function for the operator
+    operation = get_op_func(argv[2]);
 
-    if (op_func == NULL)
+    // Check if the operator is valid
+    if (operation == NULL)
     {
         printf("Error\n");
-        exit(99);
+        exit(99);  // Exit status 99 for invalid operator
     }
 
-    if ((*argv[2] == '/' || *argv[2] == '%') && num2 == 0)
+    // Handle division or modulo by zero
+    if ((argv[2][0] == '/' || argv[2][0] == '%') && num2 == 0)
     {
         printf("Error\n");
-        exit(100);
+        exit(100);  // Exit status 100 for division or modulo by zero
     }
 
-    result = op_func(num1, num2);
-    printf("%d\n", result);
-
+    // Perform the operation and print the result
+    printf("%d\n", operation(num1, num2));
     return (0);
 }
