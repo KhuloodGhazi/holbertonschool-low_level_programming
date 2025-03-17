@@ -19,27 +19,29 @@ void print_all(const char * const format, ...)
 
     if (format) { /* First if: Checks if format is not NULL */
         while (format[i]) {
-            if (format[i] == 'c' || format[i] == 'i' || format[i] == 'f' || format[i] == 's') { /* Second if: checks for format specifiers */
-                if (format[i] == 'c')
-                    printf("%s%c", separator, va_arg(args, int));
-                else if (format[i] == 'i')
-                    printf("%s%d", separator, va_arg(args, int));
-                else if (format[i] == 'f')
-                    printf("%s%f", separator, va_arg(args, double)); /* 'f' promoted to double */
-                else if (format[i] == 's')
-                {
-                    str = va_arg(args, char *);
-                    if (!str)
-                        str = "(nil)";
-                    printf("%s%s", separator, str);
+            if (format[i] == 'c' || format[i] == 'i' || format[i] == 'f' || format[i] == 's') { /* Second if: Checks for valid format specifiers */
+                printf("%s", separator); /* Print the separator before each argument */
+                
+                if (format[i] == 'c') {
+                    printf("%c", va_arg(args, int));
                 }
-                separator = ", ";
+                if (format[i] == 'i') {
+                    printf("%d", va_arg(args, int));
+                }
+                if (format[i] == 'f') {
+                    printf("%f", va_arg(args, double));
+                }
+                if (format[i] == 's') {
+                    str = va_arg(args, char *);
+                    printf("%s", str ? str : "(nil)"); /* Use "(nil)" for NULL string */
+                }
+
+                separator = ", "; /* After the first argument, add a separator */
             }
             i++;
         }
     }
 
     printf("\n");
-
     va_end(args);
 }
