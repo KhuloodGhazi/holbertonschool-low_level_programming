@@ -8,7 +8,7 @@
 /**
  * open_source - Opens a file for reading.
  * @filename: The source filename.
- * Return: File descriptor on success, exits on failure.
+ * Return: File descriptor on success, exits on failure with code 98.
  */
 int open_source(char *filename)
 {
@@ -16,7 +16,8 @@ int open_source(char *filename)
 
 	if (fd < 0)
 	{
-		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", filename);
+		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n",
+			filename);
 		exit(98);
 	}
 	return (fd);
@@ -25,7 +26,7 @@ int open_source(char *filename)
 /**
  * open_dest - Opens or creates a file for writing.
  * @filename: The destination filename.
- * Return: File descriptor on success, exits on failure.
+ * Return: File descriptor on success, exits on failure with code 99.
  */
 int open_dest(char *filename)
 {
@@ -33,46 +34,57 @@ int open_dest(char *filename)
 
 	if (fd < 0)
 	{
-		dprintf(STDERR_FILENO, "Error: Can't write to %s\n", filename);
+		dprintf(STDERR_FILENO, "Error: Can't write to %s\n",
+			filename);
 		exit(99);
 	}
 	return (fd);
 }
 
 /**
- * copy_content - Copies content from src fd to dest fd using a 1KB buffer.
+ * copy_content - Copies content from one file descriptor to another.
  * @fd_from: Source file descriptor.
  * @fd_to: Destination file descriptor.
- * @src_name: Name of the source file (for error messages).
- * @dest_name: Name of the dest file (for error messages).
+ * @src_name: Source file name (for error messages).
+ * @dest_name: Destination file name (for error messages).
+ *
+ * Reads up to 1024 bytes at a time. Exits with:
+ *   98 on read error,
+ *   99 on write error.
  */
 void copy_content(int fd_from, int fd_to, char *src_name, char *dest_name)
 {
 	char buffer[1024];
-	ssize_t bytes_read, bytes_write;
+	ssize_t bytes_read, bytes_written;
 
-	while ((bytes_read = read(fd_from, buffer, 1024)) > 0)
+	while (1)
 	{
-		bytes_write = write(fd_to, buffer, bytes_read);
-		if (bytes_write < 0 || bytes_write != bytes_read)
+		bytes_read = read(fd_from, buffer, 1024);
+		if (bytes_read < 0)
 		{
-			dprintf(STDERR_FILENO, "Error: Can't write to %s\n", dest_name);
+			dprintf(STDERR_FILENO, "Error: Can't read from file %s\n",
+				src_name);
+			close(fd_from);
+			close(fd_to);
+			exit(98);
+		}
+		if (bytes_read == 0)
+			break;
+
+		bytes_written = write(fd_to, buffer, bytes_read);
+		if (bytes_written < 0 || bytes_written != bytes_read)
+		{
+			dprintf(STDERR_FILENO, "Error: Can't write to %s\n",
+				dest_name);
 			close(fd_from);
 			close(fd_to);
 			exit(99);
 		}
 	}
-	if (bytes_read < 0)
-	{
-		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", src_name);
-		close(fd_from);
-		close(fd_to);
-		exit(98);
-	}
 }
 
 /**
- * close_fd - Closes a file descriptor, exits on error.
+ * close_fd - Closes a file descriptor, exits on error with code 100.
  * @fd: File descriptor to close.
  */
 void close_fd(int fd)
@@ -85,10 +97,15 @@ void close_fd(int fd)
 }
 
 /**
- * main - Entry point. Copies the content of one file to another.
- * @argc: Argument count.
- * @argv: Argument array.
- * Return: 0 on success, various codes on error.
+ * main - Copies the content of one file to another.
+ * @argc: Argument count (must be exactly 3).
+ * @argv: Argument array: cp file_from file_to
+ *
+ * Return: 0 on success, or various exit codes on error:
+ *    97: Incorrect argument count
+ *    98: Cannot read from file_from
+ *    99: Cannot create/write to file_to
+ *   100: Cannot close file descriptor
  */
 int main(int argc, char *argv[])
 {
