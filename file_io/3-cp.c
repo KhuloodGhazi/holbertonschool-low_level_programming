@@ -29,6 +29,7 @@ static void copy_loop(int fd_from, int fd_to, const char *file_from,
 {
 	ssize_t r, w;
 	char buffer[1024];
+	int first_iteration = 1;
 
 	while (1)
 	{
@@ -37,8 +38,8 @@ static void copy_loop(int fd_from, int fd_to, const char *file_from,
 		{
 			safe_close(fd_from);
 			safe_close(fd_to);
-			dprintf(STDERR_FILENO,
-				"Error: Can't read from file %s\n", file_from);
+			dprintf(STDERR_FILENO, "Error: Can't read from file %s\n",
+				file_from);
 			exit(98);
 		}
 		if (r == 0)
@@ -48,10 +49,22 @@ static void copy_loop(int fd_from, int fd_to, const char *file_from,
 		{
 			safe_close(fd_from);
 			safe_close(fd_to);
-			dprintf(STDERR_FILENO,
-				"Error: Can't write to %s\n", file_to);
-			exit(99);
+			if (first_iteration)
+			{
+				dprintf(STDERR_FILENO,
+					"Error: Can't read from file %s\n",
+					file_from);
+				exit(98);
+			}
+			else
+			{
+				dprintf(STDERR_FILENO,
+					"Error: Can't write to %s\n",
+					file_to);
+				exit(99);
+			}
 		}
+		first_iteration = 0;
 	}
 }
 
@@ -69,7 +82,8 @@ int copy_file(const char *file_from, const char *file_to)
 	fd_from = open(file_from, O_RDONLY);
 	if (fd_from == -1)
 	{
-		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", file_from);
+		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n",
+			file_from);
 		exit(98);
 	}
 	fd_to = open(file_to, O_WRONLY | O_CREAT | O_TRUNC, 0664);
