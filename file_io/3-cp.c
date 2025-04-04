@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include "main.h"
 
 /**
  * safe_close - Closes a file descriptor and exits with code 100 on error.
@@ -18,14 +17,12 @@ static void safe_close(int fd)
 }
 
 /**
- * copy_loop - Reads from fd_from and writes to fd_to.
+ * copy_loop - Reads from fd_from and writes to fd_to, all errors => exit(98).
  * @fd_from: File descriptor for the source file.
  * @fd_to: File descriptor for the destination file.
- * @file_from: Name of the source file.
- * @file_to: Name of the destination file.
+ * @file_from: Name of the source file (used in error messages).
  */
-static void copy_loop(int fd_from, int fd_to,
-		      const char *file_from, const char *file_to)
+static void copy_loop(int fd_from, int fd_to, const char *file_from)
 {
 	ssize_t r, w;
 	char buffer[1024];
@@ -33,11 +30,12 @@ static void copy_loop(int fd_from, int fd_to,
 	while ((r = read(fd_from, buffer, sizeof(buffer))) > 0)
 	{
 		w = write(fd_to, buffer, r);
-		if (w == -1 || (size_t)w != (size_t)r)
+		if (w == -1 || w != r)
 		{
 			safe_close(fd_from);
 			safe_close(fd_to);
-			dprintf(STDERR_FILENO, "Error: Can't write to %s\n", file_to);
+			dprintf(STDERR_FILENO, "Error: Can't read from file %s\n",
+				file_from);
 			exit(98);
 		}
 	}
@@ -45,58 +43,46 @@ static void copy_loop(int fd_from, int fd_to,
 	{
 		safe_close(fd_from);
 		safe_close(fd_to);
-		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", file_from);
+		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n",
+			file_from);
 		exit(98);
 	}
 }
 
 /**
- * copy_file - Copies the content of file_from to file_to.
- * @file_from: Source file name.
- * @file_to: Destination file name.
+ * main - copies the content of a file to another file.
+ * @argc: Number of arguments
+ * @argv: Argument vector
  *
- * Return: 0 on success.
- */
-int copy_file(const char *file_from, const char *file_to)
-{
-	int fd_from, fd_to;
-
-	fd_from = open(file_from, O_RDONLY);
-	if (fd_from == -1)
-	{
-		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", file_from);
-		exit(98);
-	}
-
-	fd_to = open(file_to, O_WRONLY | O_CREAT | O_TRUNC, 0664);
-	if (fd_to == -1)
-	{
-		dprintf(STDERR_FILENO, "Error: Can't write to %s\n", file_to);
-		safe_close(fd_from);
-		exit(98);
-	}
-
-	copy_loop(fd_from, fd_to, file_from, file_to);
-	safe_close(fd_from);
-	safe_close(fd_to);
-	return (0);
-}
-
-/**
- * main - Entry point; copies content from one file to another.
- * @argc: Argument count.
- * @argv: Argument vector.
- *
- * Return: 0 on success.
+ * Return: 0 on success, or exits with specific codes on errors.
  */
 int main(int argc, char *argv[])
 {
+	int fd_from, fd_to;
+
 	if (argc != 3)
 	{
 		dprintf(STDERR_FILENO, "Usage: cp file_from file_to\n");
 		exit(97);
 	}
-	copy_file(argv[1], argv[2]);
+	fd_from = open(argv[1], O_RDONLY);
+	if (fd_from == -1)
+	{
+		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n",
+			argv[1]);
+		exit(98);
+	}
+	fd_to = open(argv[2], O_WRONLY | O_CREAT | O_TRUNC, 0664);
+	if (fd_to == -1)
+	{
+		safe_close(fd_from);
+		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n",
+			argv[1]);
+		exit(98);
+	}
+	copy_loop(fd_from, fd_to, argv[1]);
+	safe_close(fd_from);
+	safe_close(fd_to);
 	return (0);
 }
 
