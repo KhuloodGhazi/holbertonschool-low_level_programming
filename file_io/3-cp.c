@@ -38,7 +38,7 @@ static void copy_loop(int fd_from, int fd_to,
 			safe_close(fd_from);
 			safe_close(fd_to);
 			dprintf(STDERR_FILENO, "Error: Can't write to %s\n", file_to);
-			exit(99);
+			exit(98);
 		}
 	}
 	if (r == -1)
@@ -72,7 +72,7 @@ int copy_file(const char *file_from, const char *file_to)
 	{
 		dprintf(STDERR_FILENO, "Error: Can't write to %s\n", file_to);
 		safe_close(fd_from);
-		exit(99);
+		exit(98);
 	}
 	copy_loop(fd_from, fd_to, file_from, file_to);
 	safe_close(fd_from);
