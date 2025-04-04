@@ -29,24 +29,35 @@ static void copy_loop(int fd_from, int fd_to, const char *file_from,
 {
 	ssize_t r, w;
 	char buffer[1024];
+	int first_iteration = 1;
 
-	while ((r = read(fd_from, buffer, sizeof(buffer))) > 0)
+	while (1)
 	{
+		r = read(fd_from, buffer, sizeof(buffer));
+		if (r == -1)
+		{
+			safe_close(fd_from);
+			safe_close(fd_to);
+			dprintf(STDERR_FILENO, "Error: Can't read from file %s\n",
+				file_from);
+			exit(98);
+		}
+		if (r == 0)
+			break;
 		w = write(fd_to, buffer, r);
 		if (w == -1 || (size_t)w != (size_t)r)
 		{
 			safe_close(fd_from);
 			safe_close(fd_to);
-			dprintf(STDERR_FILENO, "Error: Can't write to %s\n", file_to);
-			exit(99);
+			if (first_iteration)
+				dprintf(STDERR_FILENO,
+					"Error: Can't read from file %s\n", file_from);
+			else
+				dprintf(STDERR_FILENO,
+					"Error: Can't write to %s\n", file_to);
+			exit(first_iteration ? 98 : 99);
 		}
-	}
-	if (r == -1)
-	{
-		safe_close(fd_from);
-		safe_close(fd_to);
-		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", file_from);
-		exit(98);
+		first_iteration = 0;
 	}
 }
 
@@ -70,8 +81,8 @@ int copy_file(const char *file_from, const char *file_to)
 	fd_to = open(file_to, O_WRONLY | O_CREAT | O_TRUNC, 0664);
 	if (fd_to == -1)
 	{
-		dprintf(STDERR_FILENO, "Error: Can't write to %s\n", file_to);
 		safe_close(fd_from);
+		dprintf(STDERR_FILENO, "Error: Can't write to %s\n", file_to);
 		exit(99);
 	}
 	copy_loop(fd_from, fd_to, file_from, file_to);
@@ -97,3 +108,4 @@ int main(int argc, char *argv[])
 	copy_file(argv[1], argv[2]);
 	return (0);
 }
+
