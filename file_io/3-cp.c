@@ -8,6 +8,7 @@
 /**
  * open_source - Opens a file for reading.
  * @filename: The source filename.
+ *
  * Return: File descriptor on success, exits on failure with code 98.
  */
 int open_source(char *filename)
@@ -24,8 +25,9 @@ int open_source(char *filename)
 }
 
 /**
- * open_dest - Opens or creates a file for writing.
+ * open_dest - Opens or creates a file for writing, truncates if it exists.
  * @filename: The destination filename.
+ *
  * Return: File descriptor on success, exits on failure with code 99.
  */
 int open_dest(char *filename)
@@ -42,24 +44,24 @@ int open_dest(char *filename)
 }
 
 /**
- * copy_content - Copies content from one file descriptor to another.
+ * copy_content - Copies content from src fd to dest fd using a 1024-byte buffer.
  * @fd_from: Source file descriptor.
  * @fd_to: Destination file descriptor.
- * @src_name: Source file name (for error messages).
- * @dest_name: Destination file name (for error messages).
+ * @src_name: Name of source file (for error messages).
+ * @dest_name: Name of destination file (for error messages).
  *
- * Reads up to 1024 bytes at a time. Exits with:
- *   98 on read error,
- *   99 on write error.
+ * Exits with:
+ *   98 if read() fails,
+ *   99 if write() fails or doesn't match bytes read.
  */
 void copy_content(int fd_from, int fd_to, char *src_name, char *dest_name)
 {
 	char buffer[1024];
 	ssize_t bytes_read, bytes_written;
 
-	while (1)
+	/* Keep reading until read returns 0 (EOF) or < 0 (error). */
+	while ((bytes_read = read(fd_from, buffer, 1024)) != 0)
 	{
-		bytes_read = read(fd_from, buffer, 1024);
 		if (bytes_read < 0)
 		{
 			dprintf(STDERR_FILENO, "Error: Can't read from file %s\n",
@@ -68,9 +70,6 @@ void copy_content(int fd_from, int fd_to, char *src_name, char *dest_name)
 			close(fd_to);
 			exit(98);
 		}
-		if (bytes_read == 0)
-			break;
-
 		bytes_written = write(fd_to, buffer, bytes_read);
 		if (bytes_written < 0 || bytes_written != bytes_read)
 		{
