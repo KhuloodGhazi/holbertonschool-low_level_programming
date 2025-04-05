@@ -6,9 +6,9 @@
 #include <sys/stat.h>
 
 /**
- * open_source - Open file_from for reading.
+ * open_source - Opens a file for reading.
  * @file: Source filename.
- * Return: File descriptor on success, otherwise exit(98).
+ * Return: File descriptor on success, exit(98) on error.
  */
 int open_source(char *file)
 {
@@ -16,16 +16,18 @@ int open_source(char *file)
 
 	if (fd < 0)
 	{
-		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", file);
+		dprintf(STDERR_FILENO,
+			"Error: Can't read from file %s\n",
+			file);
 		exit(98);
 	}
 	return (fd);
 }
 
 /**
- * open_dest - Open or create file_to for writing (truncate if exists).
+ * open_dest - Opens or creates a file for writing (truncate if exists).
  * @file: Destination filename.
- * Return: File descriptor on success, otherwise exit(99).
+ * Return: File descriptor on success, exit(99) on error.
  */
 int open_dest(char *file)
 {
@@ -33,48 +35,48 @@ int open_dest(char *file)
 
 	if (fd < 0)
 	{
-		dprintf(STDERR_FILENO, "Error: Can't write to %s\n", file);
+		dprintf(STDERR_FILENO,
+			"Error: Can't write to %s\n",
+			file);
 		exit(99);
 	}
 	return (fd);
 }
 
 /**
- * copy_content - Copy data from fd_from to fd_to in 1024-byte chunks.
+ * copy_content - Copies data from fd_from to fd_to, 1024 bytes at a time.
  * @fd_from: Source file descriptor.
  * @fd_to: Destination file descriptor.
- * @src: Name of source file (for error messages).
- * @dest: Name of destination file (for error messages).
+ * @src: Source filename (for error messages).
+ * @dest: Destination filename (for error messages).
  *
  * Exits:
- *   98 if read() fails
- *   99 if write() fails
+ *   98 if read() fails,
+ *   99 if write() fails or doesn't match bytes read.
  */
 void copy_content(int fd_from, int fd_to, char *src, char *dest)
 {
 	ssize_t rd, wr;
 	char buffer[1024];
 
-	/*
-	 * We keep reading until read returns 0 (EOF) or -1 (error).
-	 * If read > 0, we immediately write that many bytes.
-	 */
 	while ((rd = read(fd_from, buffer, 1024)) > 0)
 	{
 		wr = write(fd_to, buffer, rd);
 		if (wr < 0 || wr != rd)
 		{
-			dprintf(STDERR_FILENO, "Error: Can't write to %s\n", dest);
+			dprintf(STDERR_FILENO,
+				"Error: Can't write to %s\n",
+				dest);
 			close(fd_from);
 			close(fd_to);
 			exit(99);
 		}
 	}
-
-	/* If read returned -1 at any point, that's a read error => exit(98). */
 	if (rd < 0)
 	{
-		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", src);
+		dprintf(STDERR_FILENO,
+			"Error: Can't read from file %s\n",
+			src);
 		close(fd_from);
 		close(fd_to);
 		exit(98);
@@ -82,14 +84,16 @@ void copy_content(int fd_from, int fd_to, char *src, char *dest)
 }
 
 /**
- * close_fd - Close a file descriptor, exit(100) on error.
+ * close_fd - Closes a file descriptor, exit(100) on error.
  * @fd: File descriptor to close.
  */
 void close_fd(int fd)
 {
 	if (close(fd) < 0)
 	{
-		dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", fd);
+		dprintf(STDERR_FILENO,
+			"Error: Can't close fd %d\n",
+			fd);
 		exit(100);
 	}
 }
@@ -97,9 +101,9 @@ void close_fd(int fd)
 /**
  * main - Copies the content of one file to another.
  * @ac: Argument count (must be 3).
- * @av: Argument array: cp file_from file_to
+ * @av: Argument vector: cp file_from file_to
  *
- * Return: 0 on success, or exit code 97, 98, 99, 100 on error.
+ * Return: 0 on success, or exit codes 97, 98, 99, 100 on error.
  */
 int main(int ac, char *av[])
 {
@@ -107,7 +111,8 @@ int main(int ac, char *av[])
 
 	if (ac != 3)
 	{
-		dprintf(STDERR_FILENO, "Usage: cp file_from file_to\n");
+		dprintf(STDERR_FILENO,
+			"Usage: cp file_from file_to\n");
 		exit(97);
 	}
 	fd_from = open_source(av[1]);
