@@ -6,14 +6,15 @@
 #include <sys/stat.h>
 
 /**
- * open_source - Opens a file for reading.
- * @file: Source filename.
- * Return: File descriptor on success, exit(98) on error.
+ * open_source - Open the source file for reading.
+ * @file: Name of source file.
+ * Return: File descriptor, or exit(98) on failure.
  */
 int open_source(char *file)
 {
-	int fd = open(file, O_RDONLY);
+	int fd;
 
+	fd = open(file, O_RDONLY);
 	if (fd < 0)
 	{
 		dprintf(STDERR_FILENO,
@@ -25,14 +26,15 @@ int open_source(char *file)
 }
 
 /**
- * open_dest - Opens or creates a file for writing (truncate if exists).
- * @file: Destination filename.
- * Return: File descriptor on success, exit(99) on error.
+ * open_dest - Open or create the destination file for writing.
+ * @file: Name of destination file.
+ * Return: File descriptor, or exit(99) on failure.
  */
 int open_dest(char *file)
 {
-	int fd = open(file, O_CREAT | O_WRONLY | O_TRUNC, 0664);
+	int fd;
 
+	fd = open(file, O_CREAT | O_WRONLY | O_TRUNC, 0664);
 	if (fd < 0)
 	{
 		dprintf(STDERR_FILENO,
@@ -44,15 +46,13 @@ int open_dest(char *file)
 }
 
 /**
- * copy_content - Copies data from fd_from to fd_to, 1024 bytes at a time.
+ * copy_content - Reads data from fd_from and writes it to fd_to.
  * @fd_from: Source file descriptor.
  * @fd_to: Destination file descriptor.
  * @src: Source filename (for error messages).
  * @dest: Destination filename (for error messages).
  *
- * Exits:
- *   98 if read() fails,
- *   99 if write() fails or doesn't match bytes read.
+ * Exits(98) if read() fails, Exits(99) if write() fails.
  */
 void copy_content(int fd_from, int fd_to, char *src, char *dest)
 {
@@ -84,7 +84,7 @@ void copy_content(int fd_from, int fd_to, char *src, char *dest)
 }
 
 /**
- * close_fd - Closes a file descriptor, exit(100) on error.
+ * close_fd - Closes a file descriptor; exit(100) on error.
  * @fd: File descriptor to close.
  */
 void close_fd(int fd)
@@ -99,11 +99,12 @@ void close_fd(int fd)
 }
 
 /**
- * main - Copies the content of one file to another.
+ * main - Copies content of one file to another.
  * @ac: Argument count (must be 3).
- * @av: Argument vector: cp file_from file_to
+ * @av: Array of arguments: cp file_from file_to
  *
- * Return: 0 on success, or exit codes 97, 98, 99, 100 on error.
+ * Return: 0 on success, or exit codes on various failures:
+ *  97 (usage), 98 (read error), 99 (write error), 100 (close error).
  */
 int main(int ac, char *av[])
 {
